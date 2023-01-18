@@ -8,6 +8,8 @@
 import Foundation
 import SwiftUI
 
+
+///Fully customizable classic iOS inspired Alert Popup
 public struct AlertBox: View {
     
     let title: String

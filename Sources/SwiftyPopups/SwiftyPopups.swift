@@ -6,12 +6,20 @@ public struct PopUpView: View {
     @State var showPopup: Bool = false
     
     public var body: some View {
-        VStack {
-            Button("Toggle") { showPopup.toggle() }
+        ZStack {
             Color.blue
                 .ignoresSafeArea(.all)
-                .popup(show: $showPopup, animate: PopupAnimation(.fromBottom, .linear)) {
-                    AlertBox()
+                .notificationPopup(show: $showPopup, location: .bottom, animation: .linear(duration: 0.5)) {
+                    ZStack{
+                        Color.white
+                            .ignoresSafeArea(.all)
+                            .frame(maxHeight: 50)
+                        Text("Test")
+                    }
+                }
+            Text("TEST")
+                .onTapGesture {
+                    showPopup.toggle()
                 }
         }
     }
@@ -24,6 +32,76 @@ struct View_Preview: PreviewProvider {
     }
 }
 //END TESTING
+
+public struct NotificationPopup: View {
+    public var body: some View {
+        Text("")
+    }
+}
+//Actual Modifier
+private struct NotificationModifier<PopUp: View>: ViewModifier {
+    @Binding var show: Bool
+    let location: PopupLocation
+    let animation: Animation
+    let Popup: () -> PopUp
+    
+    //Internal
+    @State var height: CGFloat = 0
+    @State var multiplier: CGFloat = -1
+    @State var hideOffset: CGFloat = 0
+    @State var offset: CGFloat = 0
+    @State var initialLoad: Bool = true
+    
+    func body(content: Content) -> some View {
+        GeometryReader {reader in
+            ZStack {
+                content
+                if (!initialLoad){
+                    Popup()
+                        .getHeight(height: $height)
+                        .offset(y: offset)
+                        .animation(animation, value: offset)
+                        .onChange(of: show) { _ in
+                            offset = show ? ( multiplier * reader.size.height / 2) - ( multiplier * height / 2) : hideOffset
+                        }
+                        .onChange(of: height) { _ in
+                            offset = show ? ( multiplier * reader.size.height / 2) - ( multiplier * height / 2) : hideOffset
+                        }
+                        .gesture(
+                            DragGesture()
+                                .onChanged { gesture in
+                                    if (location == .top) {
+                                        if (gesture.translation.height < -15) {
+                                            show = false
+                                        }
+                                    } else if (location == .bottom) {
+                                        if (gesture.translation.height > 15) {
+                                            show = false
+                                        }
+                                    }
+                                }
+                                .onEnded { _ in
+                                }
+                        )
+                }
+            }
+            .onAppear() {
+                switch location {
+                case .top:
+                    multiplier = -1
+                    hideOffset = -1 * reader.size.height
+                case .bottom:
+                    multiplier = 1
+                    hideOffset = reader.size.height
+                }
+                offset = hideOffset
+                DispatchQueue.main.asyncAfter(deadline: .now() + .microseconds(10)) {
+                    initialLoad = false
+                }
+            }
+        }
+    }
+}
 
 
 //Actual Modifier
@@ -104,11 +182,38 @@ private struct PopupModifier<PopUp: View>: ViewModifier {
     }
 }
 
+//Internal Modifier for getting Height of view
+internal struct GetHeightModifier: ViewModifier {
+    @Binding var height: CGFloat
+
+    func body(content: Content) -> some View {
+        content
+            .background(
+            GeometryReader { geo -> Color in
+                DispatchQueue.main.async {
+                    height = geo.size.height
+                }
+                return Color.clear
+            }
+        )
+    }
+}
+
 //Adds Modifier to Views
 extension View {
     ///Displays a popup over the current view
     public func popup<PopUp: View>(show: Binding<Bool>, animate: PopupAnimation = PopupAnimation(.none, .linear), popup: @escaping () -> PopUp) -> some View {
         self.modifier(PopupModifier(show: show, Popup: popup, animate: animate))
+    }
+    
+    ///Displays a Notification like popup from top or bottom
+    public func notificationPopup<PopUp: View>(show: Binding<Bool>, location: PopupLocation = .top, animation: Animation = .linear, popup: @escaping () -> PopUp) -> some View {
+        self.modifier(NotificationModifier(show: show, location: location, animation: animation, Popup: popup))
+    }
+    
+    //Internal Modifier
+    internal func getHeight(height: Binding<CGFloat>) -> some View {
+        self.modifier(GetHeightModifier(height: height))
     }
 }
 
@@ -131,4 +236,10 @@ public enum AnimationType {
     case fromRight
     case fade
     case none
+}
+
+///Spot of Notification Popup
+public enum PopupLocation {
+    case top
+    case bottom
 }
