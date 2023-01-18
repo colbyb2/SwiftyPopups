@@ -10,12 +10,21 @@ import SwiftUI
 
 public struct AlertBox: View {
     
-    let title: String = "AlertBox"
-    let description: String = "Description"
-    let leftButton: String = "Left"
-    let rightButton: String = "Right"
-    let action1: () -> Void = {}
-    let action2: () -> Void = {}
+    let title: String
+    let description: String
+    let leftButton: String
+    let rightButton: String
+    let action1: () -> Void
+    let action2: () -> Void
+    
+    public init(title: String?, description: String?, leftButton: String?, rightButton: String?, action1: (() -> Void)?, action2: (() -> Void)?) {
+        self.title = title ?? "AlertBox"
+        self.description = description ?? "Description"
+        self.leftButton = leftButton ?? "Left"
+        self.rightButton = rightButton ?? "Right"
+        self.action1 = action1 ?? {}
+        self.action2 = action2 ?? {}
+    }
     
     public var body: some View {
         VStack(spacing: 0) {
