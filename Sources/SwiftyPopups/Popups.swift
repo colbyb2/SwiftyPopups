@@ -17,7 +17,7 @@ public struct AlertBox: View {
     let action1: () -> Void
     let action2: () -> Void
     
-    public init(title: String?, description: String?, leftButton: String?, rightButton: String?, action1: (() -> Void)?, action2: (() -> Void)?) {
+    public init(title: String? = nil, description: String? = nil, leftButton: String? = nil, rightButton: String? = nil, action1: (() -> Void)? = nil, action2: (() -> Void)? = nil) {
         self.title = title ?? "AlertBox"
         self.description = description ?? "Description"
         self.leftButton = leftButton ?? "Left"
