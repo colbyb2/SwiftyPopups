@@ -12,10 +12,10 @@ public struct PopUpView: View {
                 .notificationPopup(show: $showPopup, location: .bottom, animation: .linear(duration: 0.5)) {
                     ZStack{
                         Color.white
-                            .ignoresSafeArea(.all)
-                            .frame(maxHeight: 50)
                         Text("Test")
                     }
+                    .edgesIgnoringSafeArea(.all)
+                    .frame(maxHeight: 50)
                 }
             Text("TEST")
                 .onTapGesture {
@@ -33,11 +33,6 @@ struct View_Preview: PreviewProvider {
 }
 //END TESTING
 
-public struct NotificationPopup: View {
-    public var body: some View {
-        Text("")
-    }
-}
 //Actual Modifier
 private struct NotificationModifier<PopUp: View>: ViewModifier {
     @Binding var show: Bool
