@@ -5,6 +5,13 @@ SwiftyPopups adds an extremely intuitive SwiftUI API for popups.
 Easily add a centered modal, alert, or notfication to any view.
 Customize the entrance and exit animations in one simple line.
 
+At its simplest, an animated, custom popup can be added with just:
+```
+.popup(show: $showPopup) {
+    MyPopupView()
+}
+```
+Thats it! Check out the documentation for more in depth explanations and examples.
 
 ## Docs
 
@@ -69,3 +76,44 @@ This object takes two values, a type and an animation. The type uses the Animati
 This enum contains 6 values: fromTop, fromBottom, fromLeft, fromRight, fade, and none.
 
 The animation type simply takes any of SwiftUI's native animation styles, i.e. linear, easeInOut, etc.
+
+
+### Notification Popup
+
+Another type of popup creates a notification-like display that can either come in from the top or bottom. Using it is similar to a normal popup but uses slightly different syntax.
+**Note the `.notificationPopup()` instead of the `.popup()` modifier**
+
+This modifier takes 4 parameters.
+- **show**: This is the same as for `.popup()`
+- **location**: (Optional) This uses the `PopupLocation` enum and has 2 options, .top and .bottom. This shows the popup on the top or bottom of the screen respectively.
+- **animation**: (Optional) This is the same as for `.popup()`, it uses the native Animation types to modify animations of the popup.
+- **popup**: Notification Popup View. **Note: For notification popups, I recommend adding the .ignoresSafeArea() modifier to your popup view. This ensures that the notification can flood the corners of the screen and look its best.**
+
+The default location is the top and the default animation is linear.
+
+Example:
+
+```
+public struct MyView: View {
+    @State var show: Bool = false
+    
+    var body: some View {
+        ZStack {
+            Color.white
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            Button("Toggle Popup") {
+                show.toggle()
+            }
+        }
+        .notificationPopup(show: $show) {
+            ZStack {
+                Color.black
+                Text("Notification!")
+                    .foregroundColor(.white)
+            }
+            .ignoresSafeArea(.all)
+            .frame(maxHeight: 100)
+        }
+    }
+}
+```
